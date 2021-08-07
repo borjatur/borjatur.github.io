@@ -11,7 +11,7 @@
   
   <title>
     
-      Archives 
+      Creating a simple service in macOS 
       
       
       |
@@ -94,41 +94,154 @@
 
 
       <div class="flex-container">
-        <!-- 归档页，展示本站所有文章，按照年份降序归类，url形式：https://yoursite/archives/ -->
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
 
-<!-- last: 按年份把文章分组，当前遍历到的年份 -->
-<!-- now: 当前遍历到的文章的发布年份 -->
+<!-- LaTex Display -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script type="text/javascript" id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script>
+MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']]
+  }
+};
+</script>
 
-<div class="container archives">
-  <div class="post-list">
-    
-        <!-- 后续文章的发布年份呈现 -->
-        <div class="content-title">
-          <h2>
-            <span>2021</span>
-          </h2>
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Creating a simple service in macOS</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime" title="Update time"></i>
+          2021-08-04 19:51:47
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags" title="Tags"></i>
+                
+                <span class="span--tag">
+                  <a href="/tags/automation/" title="automation">
+                    <b>#</b> automation
+                  </a>
+                </span>
+                
+                <span class="span--tag">
+                  <a href="/tags/macos/" title="macos">
+                    <b>#</b> macos
+                  </a>
+                </span>
+                
+                <span class="span--tag">
+                  <a href="/tags/launchd/" title="launchd">
+                    <b>#</b> launchd
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <p>PLIST files are formatted in XML and stand for property list files. They’re typically used by macOS applications for defining properties and configurations settings related with how the application itself will behave as a daemon/service.</p>
+<p>See the following simple example for defining a service that will be greeting your everytime you turn on your mac:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span></span><br><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">plist</span> <span class="meta-keyword">PUBLIC</span> -//Apple <span class="meta-keyword">Computer</span>//DTD <span class="meta-keyword">PLIST</span> 1.0//EN <span class="meta-keyword">http</span>://www.apple.com/DTDs/PropertyList-1.0.dtd &gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">plist</span> <span class="attr">version</span>=<span class="string">&quot;1.0&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dict</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">key</span>&gt;</span>Label<span class="tag">&lt;/<span class="name">key</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">string</span>&gt;</span>com.example.agent<span class="tag">&lt;/<span class="name">string</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">key</span>&gt;</span>ProgramArguments<span class="tag">&lt;/<span class="name">key</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">array</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">string</span>&gt;</span>/bin/sh<span class="tag">&lt;/<span class="name">string</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">string</span>&gt;</span>-c<span class="tag">&lt;/<span class="name">string</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">string</span>&gt;</span>say hello $USER<span class="tag">&lt;/<span class="name">string</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">array</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">key</span>&gt;</span>RunAtLoad<span class="tag">&lt;/<span class="name">key</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">true</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dict</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">plist</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>The file above will be launched by running <em>launchctl</em> which is the command line interface for interacting with <em>launchd</em>. For those who are not familiar with <em>launchd</em>, it’s the service management framework used by macOS, similar in some ways to Service Control Manager on Windows or systemd on many Linux distributions.</p>
+<p>Copy the snipped above and paste its content in a new file placed in <code>~/Library/LaunchAgents/com.example.agent.plist</code></p>
+<p>First of we will proceed validating the plist file by running: </p>
+<p><code>plutil ~/Library/LaunchAgents/com.example.agent.plist</code></p>
+<p>output:</p>
+<p><code>/Users/&lt;username&gt;/Library/LaunchAgents/com.example.agent.plist: OK</code></p>
+<p>Now turn on your audio and proceed for activating our agent that will be greeting your everytime your mac is turned on:</p>
+<p><code>launchctl load -w ~/Library/LaunchAgents/com.example.agent.plist</code></p>
+<p>Here there is! you should have listened Siry greeting you, easy right?</p>
+<p>In order to verify that the agent is running just type: </p>
+<p><code>launchctl list com.example.agent</code></p>
+<p>output:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	&quot;LimitLoadToSessionType&quot; = &quot;Aqua&quot;;</span><br><span class="line">	&quot;Label&quot; = &quot;com.example.agent&quot;;</span><br><span class="line">	&quot;OnDemand&quot; = true;</span><br><span class="line">	&quot;LastExitStatus&quot; = 0;</span><br><span class="line">	&quot;Program&quot; = &quot;/bin/sh&quot;;</span><br><span class="line">	&quot;ProgramArguments&quot; = (</span><br><span class="line">		&quot;/bin/sh&quot;;</span><br><span class="line">		&quot;-c&quot;;</span><br><span class="line">		&quot;say hello $USER&quot;;</span><br><span class="line">	);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>As this is just a simple example about how services are managed in the macOS echosystem, anytime you want to turn off the agent just type:</p>
+<p><code>launchctl unload -w ~/Library/LaunchAgents/com.example.agent.plist</code></p>
+<p>Hope you find this brief introducction to how services/daemons are managed by macOS useful, if you want to know more visit:</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.launchd.info/">https://www.launchd.info/</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html">https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html</a></li>
+</ul>
+<p>Stay tuned!</p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2021/06/19/hello-world/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>Prev</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime" title="Update time"></i>
+              2021-08-04 19:51:47
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags" title="Tags"></i>
+                    
+                    <span class="span--tag">
+                      <a href="/tags/automation/" title="automation">
+                        <b>#</b> automation
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag">
+                      <a href="/tags/macos/" title="macos">
+                        <b>#</b> macos
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag">
+                      <a href="/tags/launchd/" title="launchd">
+                        <b>#</b> launchd
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+          </div>
         </div>
       
-      <div class="post-item" title="Creating a simple service in macOS">
-        <div class="time-m-d">08-04</div>
-        <div class="title">
-          <a href="/2021/08/04/services-in-macos/">
-            <span>Creating a simple service in macOS</span>
-          </a>
-        </div>
-      </div>
+    </div>
     
-      <div class="post-item" title="Hello World">
-        <div class="time-m-d">06-19</div>
-        <div class="title">
-          <a href="/2021/06/19/hello-world/">
-            <span>Hello World</span>
-          </a>
-        </div>
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
       </div>
     
   </div>
-</div>
+
 
         <div class="footer">
   <div class="social">
