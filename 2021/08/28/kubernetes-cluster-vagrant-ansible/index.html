@@ -11,7 +11,7 @@
   
   <title>
     
-      archive_a: 2021/6 
+      Kubernetes Setup Using Ansible and Vagrant 
       
       
       |
@@ -94,50 +94,181 @@
 
 
       <div class="flex-container">
-        <!-- 归档页，展示本站所有文章，按照年份降序归类，url形式：https://yoursite/archives/ -->
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
 
-<!-- last: 按年份把文章分组，当前遍历到的年份 -->
-<!-- now: 当前遍历到的文章的发布年份 -->
+<!-- LaTex Display -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script type="text/javascript" id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script>
+MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']]
+  }
+};
+</script>
 
-<div class="container archives">
-  <div class="post-list">
-    
-        <!-- 后续文章的发布年份呈现 -->
-        <div class="content-title">
-          <h2>
-            <span>2021</span>
-          </h2>
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Kubernetes Setup Using Ansible and Vagrant</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime" title="Update time"></i>
+          2021-08-28 21:20:42
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags" title="Tags"></i>
+                
+                <span class="span--tag">
+                  <a href="/tags/automation/" title="automation">
+                    <b>#</b> automation
+                  </a>
+                </span>
+                
+                <span class="span--tag">
+                  <a href="/tags/kubernetes/" title="kubernetes">
+                    <b>#</b> kubernetes
+                  </a>
+                </span>
+                
+                <span class="span--tag">
+                  <a href="/tags/ansible/" title="ansible">
+                    <b>#</b> ansible
+                  </a>
+                </span>
+                
+                <span class="span--tag">
+                  <a href="/tags/vagrant/" title="vagrant">
+                    <b>#</b> vagrant
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><p>This project came up because of the need to have a development environment for trying out Kubernetes operators at work where we didn’t have any <em>Kubernetes cluster</em> that we might use for testing purposes, so starting with something that you can run locally and make highly customizable sounded like a good approach to start with.</p>
+<p>My first try was to start using Kubernetes that comes with Docker in Mac, its nice and usually enough for trying stuff but in this specific case where I needed to install Trident it didn’t work, so that was an opportunity for trying something else and moving to mimic the most similar setup possible that we can find in our production clusters. That pointed me for using Vagrant that allow you to customize your underlaying OS, more personalizable options and could give us more confidence when testing everything.</p>
+<p>“Googling” over all the Internet (as usual when you have are dealing with something new and you want to start with good context) I found out <a target="_blank" rel="noopener" href="https://kubernetes.io/blog/2019/03/15/kubernetes-setup-using-ansible-and-vagrant/">https://kubernetes.io/blog/2019/03/15/kubernetes-setup-using-ansible-and-vagrant/</a>, well two years in software development means a lot of stuff have changed and might be deprecated but something that is backed up for Kubernetes official community can’t be wrong so I decided to give this a try.</p>
+<p>As expected, there was a lot of stuff that didn’t work at the time of writing but I took this as a challenge and wanted to invest some time for updating what was needed for bringing it back to life.</p>
+<p>Prerequisites:</p>
+<ul>
+<li>virtualbox (6.1.26 r145957 (Qt5.6.3))</li>
+<li>vagrant (2.2.18)</li>
+<li>ansible ([core 2.11.4])</li>
+<li>python (3.9.6)</li>
+<li>kubectl</li>
+</ul>
+<h2 id="Uplift-your-Kubernets-cluster"><a href="#Uplift-your-Kubernets-cluster" class="headerlink" title="Uplift your Kubernets cluster"></a>Uplift your Kubernets cluster</h2><ul>
+<li><code>git clone https://github.com/borjatur/kubernetes-using-ansible-vagrant.git</code></li>
+<li><code>cd kubernetes-using-ansible-vagrant</code></li>
+<li><code>vagrant up</code></li>
+<li><code>export KUBECONFIG=kubernetes-setup/output/config</code></li>
+<li><code>kubectl cluster-info</code></li>
+<li><em>enjoy!</em></li>
+</ul>
+<h2 id="Beyong-the-basics"><a href="#Beyong-the-basics" class="headerlink" title="Beyong the basics"></a>Beyong the basics</h2><ul>
+<li><code>vagrant suspend</code> (suspend all vm’s saving its own state so can be resumed later on with just vagrant up)</li>
+<li><code>vagrant halt</code> (destroy all vm’s)</li>
+<li><code>IMAGE_NAME</code> makes OS configurable (Vagrantfile)</li>
+<li><code>WORKER_NODES</code> makes the number of worker nodes configurable (Vagrantfile)</li>
+</ul>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2021/08/04/services-in-macos/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>Prev</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime" title="Update time"></i>
+              2021-08-28 21:20:42
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags" title="Tags"></i>
+                    
+                    <span class="span--tag">
+                      <a href="/tags/automation/" title="automation">
+                        <b>#</b> automation
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag">
+                      <a href="/tags/kubernetes/" title="kubernetes">
+                        <b>#</b> kubernetes
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag">
+                      <a href="/tags/ansible/" title="ansible">
+                        <b>#</b> ansible
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag">
+                      <a href="/tags/vagrant/" title="vagrant">
+                        <b>#</b> vagrant
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+          </div>
         </div>
       
-      <div class="post-item" title="Kubernetes Setup Using Ansible and Vagrant">
-        <div class="time-m-d">08-28</div>
-        <div class="title">
-          <a href="/2021/08/28/kubernetes-cluster-vagrant-ansible/">
-            <span>Kubernetes Setup Using Ansible and Vagrant</span>
-          </a>
-        </div>
-      </div>
+    </div>
     
-      <div class="post-item" title="Creating a simple service in macOS">
-        <div class="time-m-d">08-04</div>
-        <div class="title">
-          <a href="/2021/08/04/services-in-macos/">
-            <span>Creating a simple service in macOS</span>
-          </a>
-        </div>
-      </div>
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">Contents</div>
+    <div class="catalog-content">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Introduction"><span class="toc-text">Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Uplift-your-Kubernets-cluster"><span class="toc-text">Uplift your Kubernets cluster</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Beyong-the-basics"><span class="toc-text">Beyong the basics</span></a></li></ol>
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
     
-      <div class="post-item" title="Hello World">
-        <div class="time-m-d">06-19</div>
-        <div class="title">
-          <a href="/2021/06/19/hello-world/">
-            <span>Hello World</span>
-          </a>
-        </div>
+      <div class="comments-container">
+        
+
+
+
+
+
       </div>
     
   </div>
-</div>
+
 
         <div class="footer">
   <div class="social">
