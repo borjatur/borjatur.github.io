@@ -11,7 +11,7 @@
   
   <title>
     
-      Inversion of Control applied to typescript 
+      Resilient Backend: Signals management 
       
       
       |
@@ -122,21 +122,15 @@ MathJax = {
   <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
   <div class="container post-details" id="post-details">
     <div class="post-content">
-      <div class="post-title">Inversion of Control applied to typescript</div>
+      <div class="post-title">Resilient Backend: Signals management</div>
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime" title="Update time"></i>
-          2023-03-25 18:30:36
+          2023-06-17 11:59:23
         </span>
         
               <span class="post-tags">
                 <i class="iconfont icon-tags" title="Tags"></i>
-                
-                <span class="span--tag">
-                  <a href="/tags/typescript/" title="typescript">
-                    <b>#</b> typescript
-                  </a>
-                </span>
                 
                 <span class="span--tag">
                   <a href="/tags/nodejs/" title="nodejs">
@@ -145,8 +139,20 @@ MathJax = {
                 </span>
                 
                 <span class="span--tag">
-                  <a href="/tags/architecture/" title="architecture">
-                    <b>#</b> architecture
+                  <a href="/tags/backend/" title="backend">
+                    <b>#</b> backend
+                  </a>
+                </span>
+                
+                <span class="span--tag">
+                  <a href="/tags/kubernetes/" title="kubernetes">
+                    <b>#</b> kubernetes
+                  </a>
+                </span>
+                
+                <span class="span--tag">
+                  <a href="/tags/nestjs/" title="nestjs">
+                    <b>#</b> nestjs
                   </a>
                 </span>
                 
@@ -154,41 +160,40 @@ MathJax = {
           
       </div>
       <div class="markdown-body">
-        <p><strong>Inversion of Control</strong> (IoC) is a design pattern that allows for loose coupling and a more modular approach to coding. It involves inverting the traditional flow of control between the different components of a program. Instead of classes or modules directly creating or calling other modules or classes, they rely on an external “entity” (it could be a framework, module or even just a main entry point) to manage their dependencies.</p>
-<p>In JavaScript/Typescript world, <strong>the most commonly used way for implementing IoC is Dependency Injection (DI)</strong>. DI is a technique that allows a component to specify its dependencies, which are then injected into the component externally. This way, the component is decoupled from its dependencies, making it more reusable and easier to test.</p>
-<p>Also this concept could sound familiar to whoever have heard about <strong>SOLID’s principles</strong>, there is one special Dependency Inversion Principle (DIP) which satisfies the following:</p>
-<blockquote>
-<p>High-level modules should not depend on low-level modules. Both should depend on abstractions. Abstractions should not depend on details. Details should depend on abstractions.</p>
-</blockquote>
-<p>Let’s see a very easy practical example of how this principle can be applied when building API’s using Node:</p>
-<p><img src="/images/dependency-injection-node.jpg"></p>
-<p>First of let’s see the following example using Javascript, as we don’t have to deal with type checking the most simple way I can think of for injecting a dependency might be:</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">UserService</span> </span>&#123;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="title">constructor</span>(<span class="params">usersRepository</span>)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.usersRepository = usersRepository;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">async</span> <span class="function"><span class="title">getUsers</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">await</span> <span class="built_in">this</span>.usersRepository.find();</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+        <h2 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h2><p>In order to build a resilient nodejs backend application there is a special chapter for managing termination signals. Here there are many reasons why Kubernetes might terminate a perfectly healthy container.</p>
+<ul>
+<li><strong>Draining nodes</strong></li>
+<li><strong>Rolling deploys</strong></li>
+<li><strong>Scaling down operations</strong></li>
+<li><strong>Eviction due to resource constraints</strong></li>
+<li><strong>Manual pod deletion</strong></li>
+</ul>
+<p>The termination lifecycle in kubernetes go through several steps:</p>
+<ol>
+<li>Pod is set to the “Terminating” State and removed from the endpoints list of all Services (At this point, the pod stops getting new traffic)</li>
+<li>preStop Hook is executed (usually used for gracefull shutdown when SIGTERM is or can’t be managed in the application itself)</li>
+<li>SIGTERM signal is sent to the pod (This is where listener for managing SIGTERM should be managing e.g. stopping any long-lived connections, etc)</li>
+<li>Kubernetes waits for a grace period (default of 30s)</li>
+<li>SIGKILL signal is sent to pod, and the pod is removed</li>
+</ol>
+<h2 id="Signal-management"><a href="#Signal-management" class="headerlink" title="Signal management"></a>Signal management</h2><p><strong>SIGTERM</strong> (Signal 15): This signal is the default signal sent to a process for termination.</p>
+<p><strong>SIGINT</strong> (Signal 2): This signal is generated when a user interrupts the application process using the keyboard shortcut Ctrl+C. Although Kubernetes does not directly send SIGINT to terminate a pod, it can be used during local development or testing.</p>
+<h2 id="Managing-termination-signals-in-a-nestjs-node-application"><a href="#Managing-termination-signals-in-a-nestjs-node-application" class="headerlink" title="Managing termination signals in a nestjs node application"></a>Managing termination signals in a nestjs node application</h2><h4 id="Create-new-service-for-managing-graceful-shutdown"><a href="#Create-new-service-for-managing-graceful-shutdown" class="headerlink" title="Create new service for managing graceful shutdown"></a>Create new service for managing graceful shutdown</h4><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; Inject, Injectable, OnApplicationShutdown &#125; <span class="keyword">from</span> <span class="string">&#x27;@nestjs/common&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; UserRepository &#125; <span class="keyword">from</span> <span class="string">&#x27;src/controllers/db/user.repository&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Injectable</span>()</span><br><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">GracefulShutdownService</span> <span class="title">implements</span> <span class="title">OnApplicationShutdown</span> </span>&#123;</span><br><span class="line">  <span class="meta">@Inject</span>(UserRepository) <span class="keyword">private</span> userRepository: UserRepository;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">async</span> <span class="function"><span class="title">onApplicationShutdown</span>(<span class="params">signal?: <span class="built_in">string</span></span>)</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`Calling <span class="subst">$&#123;signal&#125;</span> onApplicationShutdown`</span>);</span><br><span class="line">    <span class="keyword">await</span> <span class="built_in">this</span>.userRepository.shutdown();</span><br><span class="line">    process.exit(<span class="number">0</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>Then when testing UserService in isolation you just need to pass down an object with an implemented <code>find</code> property and build your expectations accordingly. e.g:</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">it(<span class="string">&#x27;user service happy path&#x27;</span>, <span class="keyword">async</span> () =&gt; &#123;</span><br><span class="line">  <span class="keyword">const</span> fakeUserRepository = &#123;</span><br><span class="line">    <span class="attr">find</span>: jest.fn(<span class="function">() =&gt;</span> <span class="built_in">Promise</span>.resolve([]))</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> userService = <span class="keyword">new</span> UserService(fakeUserRepository);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">await</span> userService.getUsers();</span><br><span class="line"></span><br><span class="line">  expect(fakeUserRepository.find).toHaveBeenCalled();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h4 id="Register-the-service-in-the-corresponding-module-as-a-provider"><a href="#Register-the-service-in-the-corresponding-module-as-a-provider" class="headerlink" title="Register the service in the corresponding module as a provider"></a>Register the service in the corresponding module as a provider</h4><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; Module &#125; <span class="keyword">from</span> <span class="string">&#x27;@nestjs/common&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; UserRepository &#125; <span class="keyword">from</span> <span class="string">&#x27;src/controllers/db/user.repository&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; UserController &#125; <span class="keyword">from</span> <span class="string">&#x27;src/controllers/http/user.controller&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; UserService &#125; <span class="keyword">from</span> <span class="string">&#x27;src/core/use-cases/user.service&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; GracefulShutdownService &#125; <span class="keyword">from</span> <span class="string">&#x27;./shutdown.service&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Module</span>(&#123;</span><br><span class="line">  <span class="attr">controllers</span>: [UserController],</span><br><span class="line">  <span class="attr">providers</span>: [</span><br><span class="line">    UserRepository,</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">provide</span>: <span class="string">&#x27;IUserRepository&#x27;</span>,</span><br><span class="line">      <span class="attr">useClass</span>: UserRepository,</span><br><span class="line">    &#125;,</span><br><span class="line">    UserService,</span><br><span class="line">    GracefulShutdownService</span><br><span class="line">  ],</span><br><span class="line">&#125;)</span><br><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">AppModule</span> </span>&#123;&#125;</span><br></pre></td></tr></table></figure>
 
-<p>But the story is somewhat different when dealing with <strong>Typescript and type checking…</strong> </p>
-<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">UserService</span> </span>&#123;</span><br><span class="line">  <span class="attr">usersRepository</span>: UserRepository;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="title">constructor</span>(<span class="params">usersRepository: UserRepository</span>)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.usersRepository = usersRepository;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="title">getUsers</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>.usersRepository.find()</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="In-your-main-ts-file-add-the-following-code-to-gracefully-handle-shutdown-signals"><a href="#In-your-main-ts-file-add-the-following-code-to-gracefully-handle-shutdown-signals" class="headerlink" title="In your main.ts file, add the following code to gracefully handle shutdown signals"></a>In your main.ts file, add the following code to gracefully handle shutdown signals</h4><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; NestFactory &#125; <span class="keyword">from</span> <span class="string">&#x27;@nestjs/core&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; AppModule &#125; <span class="keyword">from</span> <span class="string">&#x27;./framework/app.module&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">bootstrap</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> app = <span class="keyword">await</span> NestFactory.create(AppModule);</span><br><span class="line">  app.enableShutdownHooks();</span><br><span class="line">  <span class="keyword">await</span> app.listen(<span class="number">3000</span>);</span><br><span class="line">&#125;</span><br><span class="line">bootstrap();</span><br></pre></td></tr></table></figure>
 
-<blockquote>
-<p>Now trying to test a Typescript class as before we would see an error when trying to create an <code>UserService</code> instance passing down <code>fakeUserRepository</code> because <code>UserService</code> needs a full <code>UserRepository</code> implementation.</p>
-</blockquote>
-<p>Then is when <strong>Typescript Interfaces</strong> come to the rescue and with a very little tweak defining <code>UserService</code> class, the ability to use fakes become easy again.</p>
-<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">interface</span> IUserRepository &#123;</span><br><span class="line">  <span class="attr">find</span>: <span class="function">() =&gt;</span> IUser[]</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">UserService</span> </span>&#123;</span><br><span class="line">  <span class="attr">usersRepository</span>: IUserRepository;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="title">constructor</span>(<span class="params">usersRepository: IUserRepository</span>)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.usersRepository = usersRepository</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">async</span> <span class="function"><span class="title">getUsers</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">await</span> <span class="built_in">this</span>.usersRepository.find()</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>Now <code>fakeUserRepository</code> just needs to satify the interface <code>IUserRepository</code> for being a valid <code>UserService</code> dependency.</p>
-<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">it(<span class="string">&#x27;user service happy path&#x27;</span>, <span class="keyword">async</span> () =&gt; &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> fakeUserRepository = &#123;</span><br><span class="line">    <span class="attr">find</span>: jest.fn(<span class="function">() =&gt;</span> <span class="built_in">Promise</span>.resolve([]))</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> userService = <span class="keyword">new</span> UserService(fakeUserRepository);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">await</span> userService.getUsers();</span><br><span class="line"></span><br><span class="line">  expect(fakeUserRepository.find).toHaveBeenCalled();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<p><a target="_blank" href="https://github.com/borjatur/dependency-injection-express-typescript" rel="nofollow">Here there is</a> a fully implementation in express of what’s described here, this can be used as a playground, bear in mind that this is just a simple example of how to wrap your head around using dependency injection in typescript. Applying this concept to production services might require relying on third parties like <a target="_blank" href="https://github.com/inversify/InversifyJS" rel="nofollow">InversifyJS</a> for applying IoC effectively.</p>
-<p><strong>Happy coding!</strong></p>
+<p><a target="_blank" href="https://github.com/borjatur/nestjs-service-following-good-practices" rel="nofollow">See full example repository here</a></p>
+<p>By following these steps, your NestJS application with TypeORM will be able to handle graceful shutdowns by properly closing the database connection, allowing for a clean and controlled termination process.</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>Kubernetes can terminate pods for a great variety of reasons, and making sure your application handles these terminations gracefully is core to creating a stable system and providing a great user experience.</p>
 
       </div>
       
         <div class="prev-or-next">
           <div class="post-foot-next">
             
-              <a href="/2023/03/13/money-master-a-clean-architecture-api-example/" target="_self">
+              <a href="/2023/03/25/inversion-of-control/" target="_self">
                 <i class="iconfont icon-chevronleft"></i>
                 <span>Prev</span>
               </a>
@@ -197,17 +202,11 @@ MathJax = {
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime" title="Update time"></i>
-              2023-03-25 18:30:36
+              2023-06-17 11:59:23
             </span>
             
                   <span class="post-tags">
                     <i class="iconfont icon-tags" title="Tags"></i>
-                    
-                    <span class="span--tag">
-                      <a href="/tags/typescript/" title="typescript">
-                        <b>#</b> typescript
-                      </a>
-                    </span>
                     
                     <span class="span--tag">
                       <a href="/tags/nodejs/" title="nodejs">
@@ -216,8 +215,20 @@ MathJax = {
                     </span>
                     
                     <span class="span--tag">
-                      <a href="/tags/architecture/" title="architecture">
-                        <b>#</b> architecture
+                      <a href="/tags/backend/" title="backend">
+                        <b>#</b> backend
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag">
+                      <a href="/tags/kubernetes/" title="kubernetes">
+                        <b>#</b> kubernetes
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag">
+                      <a href="/tags/nestjs/" title="nestjs">
+                        <b>#</b> nestjs
                       </a>
                     </span>
                     
@@ -226,16 +237,26 @@ MathJax = {
           </div>
           <div class="post-foot-prev">
             
-              <a href="/2023/06/17/resilient-backend-signals-management/" target="_self">
-                <span>Next</span>
-                <i class="iconfont icon-chevronright"></i>
-              </a>
-            
           </div>
         </div>
       
     </div>
     
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">Contents</div>
+    <div class="catalog-content">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Overview"><span class="toc-text">Overview</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Signal-management"><span class="toc-text">Signal management</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Managing-termination-signals-in-a-nestjs-node-application"><span class="toc-text">Managing termination signals in a nestjs node application</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Create-new-service-for-managing-graceful-shutdown"><span class="toc-text">Create new service for managing graceful shutdown</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Register-the-service-in-the-corresponding-module-as-a-provider"><span class="toc-text">Register the service in the corresponding module as a provider</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#In-your-main-ts-file-add-the-following-code-to-gracefully-handle-shutdown-signals"><span class="toc-text">In your main.ts file, add the following code to gracefully handle shutdown signals</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Conclusion"><span class="toc-text">Conclusion</span></a></li></ol>
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
 
     
       <div class="comments-container">
